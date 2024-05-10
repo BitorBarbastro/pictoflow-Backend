@@ -11,8 +11,11 @@ namespace pictoflow_Backend.Models
         public User Photographer { get; set; }
         public int? WatermarkId { get; set; }
         public Watermark Watermark { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
         public DateTime CreationDate { get; set; }
         public DateTime ExpirationDate { get; set; }
         public List<Photo> Photos { get; set; }
     }
 }
+
