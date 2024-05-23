@@ -18,9 +18,9 @@ namespace pictoflow_Backend.Controllers
     {
         private readonly IMemoryCache _cache;
         private readonly UserManager _userManager;
-        private readonly pictoflow_Backend.Models.ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public UsersController(IMemoryCache cache, UserManager userManager, pictoflow_Backend.Models.ApplicationDbContext context)
+        public UsersController(IMemoryCache cache, UserManager userManager, ApplicationDbContext context)
         {
             _cache = cache;
             _userManager = userManager;
@@ -74,10 +74,9 @@ namespace pictoflow_Backend.Controllers
                         return BadRequest("Las contraseñas no coinciden.");
                     }
 
-                    var user = new pictoflow_Backend.Models.User
+                    var user = new User
                     {
-                        Email = userDto.Email,
-                        IsPhotographer = userDto.IsPhotographer
+                        Email = userDto.Email
                     };
 
                     _userManager.CreateUser(user, passwordDto.Password);

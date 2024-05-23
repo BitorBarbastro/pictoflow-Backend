@@ -1,46 +1,24 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using pictoflow_Backend.DTOs;
+﻿using pictoflow_Backend.Models;
+using System;
+using System.ComponentModel.DataAnnotations;
 
-namespace pictoflow_Backend.DTOs
+public class GalleryDto
 {
-    public class GalleryDto
-    {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public string WatermarkStyle { get; set; }
-        public decimal IndividualPrice { get; set; }
-        public decimal GalleryPrice { get; set; }
-        public List<IFormFile> Images { get; set; }
-    }
-}//Añadir a la bbdd los campos necesarios para gallery
-//[ApiController]
-//[Route("api/[controller]")]
-//public class GalleryController : ControllerBase
-//{
-//    [HttpPost]
-//    public async Task<IActionResult> PostGallery([FromForm] GalleryDto galleryDto)
-//    {
-//        try
-//        {
-//            // Aquí puedes procesar los datos recibidos y guardarlos en la base de datos
-//            // Accede a los datos de la galería a través de galleryDto
+    [Required]
+    public int PhotographerId { get; set; }
 
-//            // Ejemplo de acceso a los datos:
-//            string name = galleryDto.Name;
-//            string description = galleryDto.Description;
-//            string galleryId = galleryDto.GalleryId;
-//            string watermarkStyle = galleryDto.WatermarkStyle;
-//            decimal individualPrice = galleryDto.IndividualPrice;
-//            decimal galleryPrice = galleryDto.GalleryPrice;
-//            List<IFormFile> images = galleryDto.Images;
+    [Required]
+    [StringLength(100, ErrorMessage = "The name must be less than 100 characters.")]
+    public string Name { get; set; }
 
-//            // Aquí puedes guardar los datos en la base de datos y realizar otras operaciones necesarias
+    [StringLength(500, ErrorMessage = "The description must be less than 500 characters.")]
+    public string Description { get; set; }
 
-//            return Ok("Gallery created successfully");
-//        }
-//        catch (Exception ex)
-//        {
-//            return StatusCode(500, $"Error creating gallery: {ex.Message}");
-//        }
-//    }
-//}
+    [Required]
+    public DateTime ExpirationDate { get; set; }
+
+    [Required]
+    public WatermarkStyle WatermarkStyle { get; set; }
+
+    public int? WatermarkId { get; set; }
+}

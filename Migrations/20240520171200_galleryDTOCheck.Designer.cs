@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using pictoflow_Backend.Models;
 
@@ -11,9 +12,11 @@ using pictoflow_Backend.Models;
 namespace pictoflow_Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class PicToFlowContextModelSnapshot : ModelSnapshot
+    [Migration("20240520171200_galleryDTOCheck")]
+    partial class galleryDTOCheck
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,16 +25,13 @@ namespace pictoflow_Backend.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
-            modelBuilder.Entity("pictoflow_Backend.Models.Feedback", b =>
+            modelBuilder.Entity("pictoflow_Backend.Models.Comment", b =>
                 {
-                    b.Property<int>("UserId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int>("PhotoId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("AddCart")
-                        .HasColumnType("tinyint(1)");
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -40,11 +40,19 @@ namespace pictoflow_Backend.Migrations
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("datetime(6)");
 
-                    b.HasKey("UserId", "PhotoId");
+                    b.Property<int>("PhotoId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("PhotoId");
 
-                    b.ToTable("Feedbacks");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("pictoflow_Backend.Models.Gallery", b =>
@@ -227,16 +235,16 @@ namespace pictoflow_Backend.Migrations
                     b.ToTable("Watermarks");
                 });
 
-            modelBuilder.Entity("pictoflow_Backend.Models.Feedback", b =>
+            modelBuilder.Entity("pictoflow_Backend.Models.Comment", b =>
                 {
                     b.HasOne("pictoflow_Backend.Models.Photo", "Photo")
-                        .WithMany("Feedbacks")
+                        .WithMany("Comments")
                         .HasForeignKey("PhotoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("pictoflow_Backend.Models.User", "User")
-                        .WithMany("Feedbacks")
+                        .WithMany("Comments")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -311,12 +319,12 @@ namespace pictoflow_Backend.Migrations
 
             modelBuilder.Entity("pictoflow_Backend.Models.Photo", b =>
                 {
-                    b.Navigation("Feedbacks");
+                    b.Navigation("Comments");
                 });
 
             modelBuilder.Entity("pictoflow_Backend.Models.User", b =>
                 {
-                    b.Navigation("Feedbacks");
+                    b.Navigation("Comments");
 
                     b.Navigation("Galleries");
 

@@ -5,8 +5,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-
-
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +16,7 @@ namespace pictoflow_Backend.Services
         private readonly ApplicationDbContext _context;
         private readonly PasswordHasher<User> _passwordHasher;
         private readonly IConfiguration _configuration;
+
         public UserManager(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
@@ -42,7 +41,6 @@ namespace pictoflow_Backend.Services
             string hashedPassword = HashPassword(password, user.PasswordSalt);
             return hashedPassword == user.PasswordHash;
         }
-
 
         public void CreateUser(User user, string password)
         {
@@ -70,6 +68,7 @@ namespace pictoflow_Backend.Services
 
             return hashed;
         }
+
         public string GenerateJwtToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -78,9 +77,8 @@ namespace pictoflow_Backend.Services
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-            new Claim(ClaimTypes.Name, user.Email),
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim("IsPhotographer", user.IsPhotographer.ToString())
+                    new Claim(ClaimTypes.Name, user.Email),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -88,6 +86,5 @@ namespace pictoflow_Backend.Services
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
-
     }
 }

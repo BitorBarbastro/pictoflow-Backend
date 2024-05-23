@@ -26,8 +26,7 @@ namespace pictoflow_Backend.Services
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim(ClaimTypes.Name, user.Email),
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim("IsPhotographer", user.IsPhotographer.ToString())
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -35,6 +34,7 @@ namespace pictoflow_Backend.Services
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
+
         public ClaimsPrincipal ValidateToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -56,6 +56,11 @@ namespace pictoflow_Backend.Services
             {
                 throw new SecurityTokenException("Invalid token");
             }
+        }
+
+        public int GetAuthenticatedUserId()
+        {
+            return 22;
         }
     }
 }

@@ -14,7 +14,7 @@ namespace pictoflow_Backend.Models
         public DbSet<Watermark> Watermarks { get; set; }
         public DbSet<Gallery> Galleries { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
-        public DbSet<Comment> Comments { get; set; }
+        public DbSet<Feedback> Feedbacks { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -36,7 +36,12 @@ namespace pictoflow_Backend.Models
                 entity.HasOne(p => p.User)
                     .WithMany(u => u.Photos)
                     .HasForeignKey(p => p.UserId);
-                // Otras configuraciones de la entidad Photo
+                entity.HasOne(p => p.Gallery)
+                    .WithMany(g => g.Photos)
+                    .HasForeignKey(p => p.GalleryId);
+
+                entity.Property(p => p.HighResImagePath).IsRequired();
+                entity.Property(p => p.WatermarkedImagePath).IsRequired();
             });
 
             // Configuración de la entidad Watermark
@@ -44,9 +49,9 @@ namespace pictoflow_Backend.Models
             {
                 entity.HasKey(w => w.Id);
                 entity.HasOne(w => w.Photographer)
-                    .WithMany(u => u.Watermarks)
-                    .HasForeignKey(w => w.PhotographerId);
-                // Otras configuraciones de la entidad Watermark
+                      .WithMany(u => u.Watermarks)
+                      .HasForeignKey(w => w.PhotographerId);
+                entity.Property(w => w.Name).IsRequired();
             });
 
             // Configuración de la entidad Gallery
@@ -56,6 +61,8 @@ namespace pictoflow_Backend.Models
                 entity.HasOne(g => g.Photographer)
                     .WithMany(u => u.Galleries)
                     .HasForeignKey(g => g.PhotographerId);
+                entity.Property(g => g.WatermarkStyle)
+                      .HasConversion<string>(); // Configurar la conversión del enum a string
             });
 
             // Configuración de la entidad Transaction
@@ -68,17 +75,17 @@ namespace pictoflow_Backend.Models
                 // Otras configuraciones de la entidad Transaction
             });
 
-            // Configuración de la entidad Comment
-            modelBuilder.Entity<Comment>(entity =>
+            // Configuración de la entidad Feedback
+            modelBuilder.Entity<Feedback>(entity =>
             {
-                entity.HasKey(c => c.Id);
-                entity.HasOne(c => c.User)
-                    .WithMany(u => u.Comments)
-                    .HasForeignKey(c => c.UserId);
-                entity.HasOne(c => c.Photo)
-                    .WithMany(p => p.Comments)
-                    .HasForeignKey(c => c.PhotoId);
-                // Otras configuraciones de la entidad Comment
+                entity.HasKey(f => new { f.UserId, f.PhotoId });
+                entity.HasOne(f => f.User)
+                    .WithMany(u => u.Feedbacks)
+                    .HasForeignKey(f => f.UserId);
+                entity.HasOne(f => f.Photo)
+                    .WithMany(p => p.Feedbacks)
+                    .HasForeignKey(f => f.PhotoId);
+                // Otras configuraciones de la entidad Feedback
             });
         }
     }

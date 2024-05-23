@@ -7,6 +7,11 @@ using pictoflow_Backend.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.Extensions.FileProviders;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using dotenv.net;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -85,17 +90,35 @@ builder.Services.AddScoped<UserManager>();
 builder.Services.AddScoped<UploadsManager>();
 builder.Services.AddScoped<AuthenticationService>();
 
+builder.Services.AddSingleton<IWatermarkService, WatermarkService>();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReactOrigin", builder =>
-        builder.AllowAnyOrigin()
+    options.AddPolicy("AllowSpecificOrigins", builder =>
+        builder.WithOrigins("http://localhost:3000") // URL del frontend
                .AllowAnyMethod()
-               .AllowAnyHeader());
+               .AllowAnyHeader()
+               .AllowCredentials());
 });
 
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
+
+app.UseStaticFiles(); // Para wwwroot
+
+// Servir archivos estáticos desde la carpeta uploads
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(app.Environment.ContentRootPath, "uploads")),
+    RequestPath = "/uploads"
+});
 
 if (app.Environment.IsDevelopment())
 {
@@ -112,9 +135,9 @@ else
 }
 
 app.UseSession();
-app.UseStaticFiles();
 app.UseRouting();
-app.UseCors("AllowReactOrigin");
+app.UseCors("AllowSpecificOrigins"); // Aplicar la política de CORS aquí
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

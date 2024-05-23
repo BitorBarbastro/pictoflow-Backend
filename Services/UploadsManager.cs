@@ -13,12 +13,13 @@ namespace pictoflow_Backend.Services
             _context = context;
         }
 
-        public async Task<Watermark> SaveWatermarkAsync(int photographerId, string imagePath)
+        public async Task<Watermark> SaveWatermarkAsync(int photographerId, string imagePath, string name)
         {
             var watermark = new Watermark
             {
                 PhotographerId = photographerId,
-                ImagePath = imagePath
+                ImagePath = imagePath,
+                Name = name
             };
 
             _context.Watermarks.Add(watermark);
