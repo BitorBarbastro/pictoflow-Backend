@@ -5,10 +5,9 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-
-
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Configuration;
 
 namespace pictoflow_Backend.Services
 {
@@ -16,11 +15,13 @@ namespace pictoflow_Backend.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly PasswordHasher<User> _passwordHasher;
+        private readonly IConfiguration _configuration;
 
-        public UserManager(ApplicationDbContext context)
+        public UserManager(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
             _passwordHasher = new PasswordHasher<User>();
+            _configuration = configuration;
         }
 
         public void SetUserPassword(User user, string password)
@@ -40,7 +41,6 @@ namespace pictoflow_Backend.Services
             string hashedPassword = HashPassword(password, user.PasswordSalt);
             return hashedPassword == user.PasswordHash;
         }
-
 
         public void CreateUser(User user, string password)
         {
@@ -68,16 +68,17 @@ namespace pictoflow_Backend.Services
 
             return hashed;
         }
-        private string GenerateJwtToken(User user)
+
+        public string GenerateJwtToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes("tu_clave_secreta_aqui"); // Asegúrate de usar una clave secreta segura
+            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-            new Claim(ClaimTypes.Name, user.Email)
-                    // Puedes agregar más claims aquí si es necesario
+                    new Claim(ClaimTypes.Name, user.Email),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -85,6 +86,5 @@ namespace pictoflow_Backend.Services
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
-
     }
 }

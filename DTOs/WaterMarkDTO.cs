@@ -1,10 +1,8 @@
-﻿namespace pictoflow_Backend.Models
+﻿namespace pictoflow_Backend.DTOs
 {
-    public class Watermark
+    public class WatermarkDTO
     {
-        public int Id { get; set; }
         public int PhotographerId { get; set; }
-        public User Photographer { get; set; }
         public string ImagePath { get; set; }
         public string Name { get; set; }
     }

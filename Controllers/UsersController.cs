@@ -18,34 +18,13 @@ namespace pictoflow_Backend.Controllers
     {
         private readonly IMemoryCache _cache;
         private readonly UserManager _userManager;
-        private readonly pictoflow_Backend.Models.ApplicationDbContext _context;
-        private readonly IConfiguration _config;
+        private readonly ApplicationDbContext _context;
 
-        public UsersController(IMemoryCache cache, UserManager userManager, pictoflow_Backend.Models.ApplicationDbContext context, IConfiguration config)
+        public UsersController(IMemoryCache cache, UserManager userManager, ApplicationDbContext context)
         {
             _cache = cache;
             _userManager = userManager;
             _context = context;
-            _config = config;
-        }
-
-        private string GenerateJwtToken(User user)
-        {
-            var secretKey = _config["Jwt:Key"];
-            var key = Encoding.ASCII.GetBytes(secretKey);
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim(ClaimTypes.Name, user.Email)
-                    // Puedes agregar más claims aquí si es necesario
-                }),
-                Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
         }
 
         [HttpPost("register1")]
@@ -95,10 +74,9 @@ namespace pictoflow_Backend.Controllers
                         return BadRequest("Las contraseñas no coinciden.");
                     }
 
-                    var user = new pictoflow_Backend.Models.User
+                    var user = new User
                     {
-                        Email = userDto.Email,
-                        IsPhotographer = userDto.IsPhotographer
+                        Email = userDto.Email
                     };
 
                     _userManager.CreateUser(user, passwordDto.Password);
@@ -106,7 +84,7 @@ namespace pictoflow_Backend.Controllers
                     _cache.Remove(passwordDto.Token);
 
                     // Generar y devolver el token JWT
-                    var token = GenerateJwtToken(user);
+                    var token = _userManager.GenerateJwtToken(user);
                     return Ok(new { Token = token, message = "Registro exitoso." });
                 }
 
@@ -138,7 +116,7 @@ namespace pictoflow_Backend.Controllers
                 }
 
                 // Generar y devolver el token JWT
-                var token = GenerateJwtToken(user);
+                var token = _userManager.GenerateJwtToken(user);
                 return Ok(new { Token = token, message = "Inicio de sesión exitoso." });
             }
             catch (Exception ex)
