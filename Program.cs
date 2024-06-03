@@ -1,19 +1,19 @@
 using Microsoft.EntityFrameworkCore;
 using pictoflow_Backend.Services;
 using Microsoft.OpenApi.Models;
-using pictoflow_Backend;
 using Microsoft.AspNetCore.Identity;
 using pictoflow_Backend.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.Extensions.FileProviders;
-using CloudinaryDotNet;
-using CloudinaryDotNet.Actions;
-using dotenv.net;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+var corsUrls = builder.Configuration.GetSection("Cors").Get<Dictionary<string, string>>();
+var environment = builder.Environment.IsDevelopment() ? "Development" : "Production";
+var frontendUrl = corsUrls[environment];
+var connectionString = builder.Configuration.GetConnectionString(environment + "Connection");
 
 // Configurar los endpoints de Kestrel
 builder.WebHost.ConfigureKestrel(options =>
@@ -82,8 +82,7 @@ builder.Logging.AddDebug();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-        new MySqlServerVersion(new Version(8, 0, 21))));
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 21))));
 
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<UserManager>();
@@ -100,7 +99,7 @@ builder.Services.AddControllers()
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigins", builder =>
-        builder.WithOrigins("http://localhost:3000") // URL del frontend
+        builder.WithOrigins(frontendUrl)
                .AllowAnyMethod()
                .AllowAnyHeader()
                .AllowCredentials());
@@ -136,7 +135,7 @@ else
 
 app.UseSession();
 app.UseRouting();
-app.UseCors("AllowSpecificOrigins"); // Aplicar la política de CORS aquí
+app.UseCors("AllowSpecificOrigins");
 
 app.UseAuthentication();
 app.UseAuthorization();
