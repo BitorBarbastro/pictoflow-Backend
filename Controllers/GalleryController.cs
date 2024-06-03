@@ -58,17 +58,15 @@ namespace pictoflow_Backend.Controllers
                         await file.CopyToAsync(stream);
                     }
 
-                    // Aquí puedes agregar lógica para aplicar la marca de agua y guardar la imagen con marca de agua
-                    // Por ahora, simplemente copiaremos la imagen original a la ruta de la imagen con marca de agua
                     System.IO.File.Copy(highResFilePath, watermarkedFilePath, true);
 
                     var photo = new Photo
                     {
                         GalleryId = galleryId,
-                        Title = Path.GetFileNameWithoutExtension(file.FileName), // Usar el nombre del archivo como título
+                        Title = Path.GetFileNameWithoutExtension(file.FileName), 
                         HighResImagePath = highResFilePath,
                         WatermarkedImagePath = watermarkedFilePath,
-                        UserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)) // Asumiendo que el UserId está en el token
+                        UserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)) 
                     };
                     _context.Photos.Add(photo);
                 }
@@ -102,12 +100,59 @@ namespace pictoflow_Backend.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception (ex) here for debugging
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+      
+            // Endpoint para renombrar una fotografía
+            [HttpPut("renamePhoto/{photoId}")]
+            [Authorize]
+            public async Task<IActionResult> RenamePhoto(int photoId, [FromBody] string newName)
+            {
+                var photo = await _context.Photos.FindAsync(photoId);
+                if (photo == null)
+                {
+                    return NotFound("Photo not found.");
+                }
 
+                photo.Title = newName;
+                _context.Photos.Update(photo);
+                await _context.SaveChangesAsync();
+
+                return Ok("Photo renamed successfully.");
+            }
+
+            // Endpoint para eliminar una fotografía
+            [HttpDelete("deletePhoto/{photoId}")]
+            [Authorize]
+            public async Task<IActionResult> DeletePhoto(int photoId)
+            {
+                var photo = await _context.Photos.FindAsync(photoId);
+                if (photo == null)
+                {
+                    return NotFound("Photo not found.");
+                }
+
+                // Eliminar archivos físicos
+                var highResFile = new FileInfo(photo.HighResImagePath);
+                if (highResFile.Exists)
+                {
+                    highResFile.Delete();
+                }
+
+                var watermarkedFile = new FileInfo(photo.WatermarkedImagePath);
+                if (watermarkedFile.Exists)
+                {
+                    watermarkedFile.Delete();
+                }
+
+                _context.Photos.Remove(photo);
+                await _context.SaveChangesAsync();
+
+                return Ok("Photo deleted successfully.");
+            }
+        }
 
     }
 
-}
+
