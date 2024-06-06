@@ -13,14 +13,17 @@ var builder = WebApplication.CreateBuilder(args);
 var corsUrls = builder.Configuration.GetSection("Cors").Get<Dictionary<string, string>>();
 var environment = builder.Environment.IsDevelopment() ? "Development" : "Production";
 var frontendUrl = corsUrls[environment];
-var connectionString = builder.Configuration.GetConnectionString(environment + "Connection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 // Configurar los endpoints de Kestrel
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.ListenAnyIP(5046);
+    options.ListenAnyIP(5046); // Configuración existente para HTTP
+    options.ListenAnyIP(5047, listenOptions =>
+    {
+        listenOptions.UseHttps("/etc/letsencrypt/live/pictoflow.bbarbastro.dawmor.cloud/certificado.pfx", "password");
+    });
 });
-
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -99,11 +102,17 @@ builder.Services.AddControllers()
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigins", builder =>
-        builder.WithOrigins(frontendUrl)
-               .AllowAnyMethod()
-               .AllowAnyHeader()
-               .AllowCredentials());
+        builder.WithOrigins(
+            "http://18.214.151.172",
+            "https://18.214.151.172",
+            "http://pictoflow.bbarbastro.dawmor.cloud",
+            "https://pictoflow.bbarbastro.dawmor.cloud"
+        )
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials());
 });
+
 
 builder.Services.AddRazorPages();
 
