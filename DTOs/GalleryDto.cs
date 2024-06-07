@@ -21,4 +21,13 @@ public class GalleryDto
     public WatermarkStyle WatermarkStyle { get; set; }
 
     public int? WatermarkId { get; set; }
+
+    // Añadir los campos que faltan
+    [Required]
+    [Range(0, double.MaxValue, ErrorMessage = "The individual price must be a positive number.")]
+    public double IndividualPrice { get; set; }
+
+    [Required]
+    [Range(0, double.MaxValue, ErrorMessage = "The total price must be a positive number.")]
+    public double TotalPrice { get; set; }
 }

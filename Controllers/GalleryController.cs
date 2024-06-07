@@ -103,9 +103,35 @@ namespace pictoflow_Backend.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-      
-            // Endpoint para renombrar una fotografía
-            [HttpPut("renamePhoto/{photoId}")]
+        [HttpGet("{galleryId}/highres")]
+        public async Task<IActionResult> GetHighResPhotos(int galleryId)
+        {
+            try
+            {
+                var photos = await _context.Photos
+                    .Where(p => p.GalleryId == galleryId)
+                    .Select(p => new
+                    {
+                        p.Id,
+                        p.Title,
+                        HighresImageUrl= Url.Content($"~/uploads/photographer_{p.UserId}/gallery_{galleryId}/highres/{Path.GetFileName(p.HighResImagePath)}")
+                    })
+                    .ToListAsync();
+
+                if (photos == null || !photos.Any())
+                {
+                    return NotFound("No photos found for the given gallery.");
+                }
+
+                return Ok(photos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+        // Endpoint para renombrar una fotografía
+        [HttpPut("renamePhoto/{photoId}")]
             [Authorize]
             public async Task<IActionResult> RenamePhoto(int photoId, [FromBody] string newName)
             {

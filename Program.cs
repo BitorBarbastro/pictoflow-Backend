@@ -107,6 +107,7 @@ builder.Services.AddCors(options =>
             "https://18.214.151.172",
             "http://pictoflow.bbarbastro.dawmor.cloud",
             "https://pictoflow.bbarbastro.dawmor.cloud"
+            , "http://localhost:3000"
         )
         .AllowAnyMethod()
         .AllowAnyHeader()
