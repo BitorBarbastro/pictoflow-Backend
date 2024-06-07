@@ -169,7 +169,9 @@ namespace pictoflow_Backend.Controllers
                 CreationDate = DateTime.UtcNow,
                 ExpirationDate = galleryDto.ExpirationDate,
                 WatermarkStyle = galleryDto.WatermarkStyle,
-                WatermarkId = galleryDto.WatermarkId
+                WatermarkId = galleryDto.WatermarkId,
+                IndividualPrice = (decimal)galleryDto.IndividualPrice, // Conversión explícita a decimal
+                TotalPrice = (decimal)galleryDto.TotalPrice // Conversión explícita a decimal
             };
 
             try
@@ -185,7 +187,5 @@ namespace pictoflow_Backend.Controllers
             }
         }
 
-
-     
     }
 }
