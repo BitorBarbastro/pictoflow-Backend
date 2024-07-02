@@ -21,14 +21,13 @@ namespace pictoflow_Backend.Models
             // Configuraciones adicionales de las entidades
 
             // Configuración de la entidad User
-            modelBuilder.Entity<User>(entity =>
-            {
-                entity.HasKey(u => u.Id);
-                entity.Property(u => u.Email).IsRequired();
-                entity.Property(u => u.PasswordSalt).IsRequired();
-                // Otras configuraciones de la entidad User
-            });
-
+      modelBuilder.Entity<User>(entity =>
+     {
+         entity.HasKey(u => u.Id);
+         entity.Property(u => u.Email).IsRequired().HasMaxLength(255);
+         entity.HasIndex(u => u.Email).IsUnique();
+         entity.Property(u => u.PasswordSalt).IsRequired();
+     });
             // Configuración de la entidad Photo
             modelBuilder.Entity<Photo>(entity =>
             {

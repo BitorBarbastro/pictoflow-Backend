@@ -1,0 +1,26 @@
+public partial class AddDefaultUserAndWatermark : Migration
+{
+    protected override void Up(MigrationBuilder migrationBuilder)
+    {
+        // Insertar el usuario por defecto con Id = 0
+        migrationBuilder.Sql(@"
+            INSERT INTO Users (Id, Name, PasswordHash, BillingAddress, Description, PhoneNumber, TaxId, Email, PasswordSalt)
+            VALUES (0, 'Default User', 'hashed_password', '123 Main St', 'Default Photographer', '123-456-7890', '123456789', 'default@example.com', 'salt_value');
+        ");
+
+        // Insertar la marca de agua por defecto con Id = 0
+        migrationBuilder.Sql(@"
+            INSERT INTO Watermarks (Id, PhotographerId, ImagePath, Name)
+            VALUES (0, 0, '/home/ubuntu/pictoflow-Backend/uploads/photographer_0/watermarks/default.png', 'Default');
+        ");
+    }
+
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        // Eliminar el usuario por defecto con Id = 0
+        migrationBuilder.Sql("DELETE FROM Users WHERE Id = 0;");
+
+        // Eliminar la marca de agua por defecto con Id = 0
+        migrationBuilder.Sql("DELETE FROM Watermarks WHERE Id = 0;");
+    }
+}

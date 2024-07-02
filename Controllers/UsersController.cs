@@ -27,26 +27,34 @@ namespace pictoflow_Backend.Controllers
             _context = context;
         }
 
-        [HttpPost("register1")]
-        public IActionResult Register1([FromBody] UserDto userDto)
-        {
-            if (userDto == null || string.IsNullOrEmpty(userDto.Email))
-            {
-                return BadRequest("Los datos del usuario son inválidos.");
-            }
+[HttpPost("register1")]
+public IActionResult Register1([FromBody] UserDto userDto)
+{
+    if (userDto == null || string.IsNullOrEmpty(userDto.Email))
+    {
+        return BadRequest(new { message = "Los datos del usuario son inválidos." });
+    }
 
-            // Generar un token único
-            string token = Guid.NewGuid().ToString();
+    // Comprobar si el correo ya existe en la base de datos
+    var existingUser = _context.Users.FirstOrDefault(u => u.Email == userDto.Email);
+    if (existingUser != null)
+    {
+        return BadRequest(new { message = "El correo ya está registrado." });
+    }
 
-            // Guardar los datos del usuario y el token en la caché
-            var cacheEntryOptions = new MemoryCacheEntryOptions()
-                .SetSlidingExpiration(TimeSpan.FromMinutes(10));
+    // Generar un token único
+    string token = Guid.NewGuid().ToString();
 
-            _cache.Set(token, userDto, cacheEntryOptions);
+    // Guardar los datos del usuario y el token en la caché
+    var cacheEntryOptions = new MemoryCacheEntryOptions()
+        .SetSlidingExpiration(TimeSpan.FromMinutes(10));
 
-            // Devolver el token en la respuesta
-            return Ok(new { Token = token });
-        }
+    _cache.Set(token, userDto, cacheEntryOptions);
+
+    // Devolver el token en la respuesta
+    return Ok(new { Token = token });
+}
+
 
         [HttpGet("register2")]
         public IActionResult Register2(string token)

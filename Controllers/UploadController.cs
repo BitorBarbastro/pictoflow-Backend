@@ -48,25 +48,45 @@ namespace pictoflow_Backend.Controllers
         }
 
 
-
-        [HttpPut("upload/{photographerId}/watermarks/{fileName}")]
-        public async Task<IActionResult> RenameWatermark(int photographerId, string fileName, [FromBody] WatermarkUpdateDto updateDto)
+[HttpPut("upload/{photographerId}/watermarks/{fileName}")]
+public async Task<IActionResult> RenameWatermark(int photographerId, string fileName, [FromBody] WatermarkUpdateDto updateDto)
+{
+    try
+    {
+        // Verificar la conexión a la base de datos
+        if (_context.Database.CanConnect())
         {
-            // Buscar la marca de agua en la base de datos
-            var watermark = await _context.Watermarks.FirstOrDefaultAsync(w => w.PhotographerId == photographerId && w.Name == fileName);
-            if (watermark == null)
-            {
-                return NotFound("Watermark not found.");
-            }
-
-            // Actualizar el nombre de la marca de agua
-            watermark.Name = updateDto.NewName;
-            _context.Watermarks.Update(watermark);
-            await _context.SaveChangesAsync();
-
-            return Ok("Watermark name updated successfully.");
+            Console.WriteLine("Database connection is successful.");
+        }
+        else
+        {
+            Console.WriteLine("Failed to connect to the database.");
+            return StatusCode(500, "Failed to connect to the database.");
         }
 
+        // Buscar la marca de agua en la base de datos
+        var watermark = await _context.Watermarks.FirstOrDefaultAsync(w => w.PhotographerId == photographerId && w.Name == fileName);
+        if (watermark == null)
+        {
+            Console.WriteLine($"Watermark not found for PhotographerId: {photographerId}, FileName: {fileName}");
+            return NotFound("Watermark not found.");
+        }
+
+        // Actualizar el nombre de la marca de agua
+        Console.WriteLine($"Updating watermark name from {watermark.Name} to {updateDto.NewName}");
+        watermark.Name = updateDto.NewName;
+        _context.Watermarks.Update(watermark);
+        await _context.SaveChangesAsync();
+
+        Console.WriteLine("Watermark name updated successfully.");
+        return Ok("Watermark name updated successfully.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"An error occurred: {ex.Message}");
+        return StatusCode(500, "An error occurred while processing your request.");
+    }
+}
         [HttpGet("upload/{photographerId}/watermarks")]
         public async Task<IActionResult> GetWatermarks(int photographerId)
         {

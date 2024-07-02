@@ -176,9 +176,40 @@ namespace pictoflow_Backend.Controllers
                 await _context.SaveChangesAsync();
 
                 return Ok("Photo deleted successfully.");
+
+            }
+
+
+        [HttpGet("photographer/{photographerId}")]
+        [Authorize]
+        public async Task<IActionResult> GetGalleries(int photographerId)
+        {
+            try
+            {
+                var galleries = await _context.Galleries
+                    .Where(g => g.PhotographerId == photographerId)
+                    .Select(g => new
+                    {
+                        g.Id,
+                        g.Name,
+                        FirstImage = _context.Photos
+                            .Where(p => p.GalleryId == g.Id)
+                            .Select(p => p.HighResImagePath)
+                            .FirstOrDefault()
+                    })
+                    .ToListAsync();
+
+                if (galleries == null || !galleries.Any())
+                {
+                    return NotFound("No galleries found for the given photographer.");
+                }
+
+                return Ok(galleries);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-
     }
-
-
+}
